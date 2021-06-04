@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Command">
+    <Text>Command RevitGrid</Text>
+    <Description>Some description for RevitGrid</Description>
+    <Assembly>RevitGrid.dll</Assembly>
+    <FullClassName>RevitGrid.Command</FullClassName>
+    <ClientId>d58aff81-ecfe-4a6c-bbd8-5176f82eb0cb</ClientId>
+    <VendorId>com.typepad.thebuildingcoder</VendorId>
+    <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
+  </AddIn>
+  <AddIn Type="Application">
+    <Name>Application RevitGrid</Name>
+    <Assembly>RevitGrid.dll</Assembly>
+    <FullClassName>RevitGrid.App</FullClassName>
+    <ClientId>84604ce8-c990-4ded-8583-9d1c84a86a7d</ClientId>
+    <VendorId>com.typepad.thebuildingcoder</VendorId>
+    <VendorDescription>The Building Coder, http://thebuildingcoder.typepad.com</VendorDescription>
+  </AddIn>
+</RevitAddIns>

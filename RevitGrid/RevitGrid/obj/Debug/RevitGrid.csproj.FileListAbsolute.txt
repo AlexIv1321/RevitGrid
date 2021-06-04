@@ -1,0 +1,5 @@
+C:\Users\Ырырыр\source\repos\RevitGrid\RevitGrid\bin\Debug\RevitGrid.dll
+C:\Users\Ырырыр\source\repos\RevitGrid\RevitGrid\bin\Debug\RevitGrid.pdb
+C:\Users\Ырырыр\source\repos\RevitGrid\RevitGrid\obj\Debug\RevitGrid.csproj.CoreCompileInputs.cache
+C:\Users\Ырырыр\source\repos\RevitGrid\RevitGrid\obj\Debug\RevitGrid.dll
+C:\Users\Ырырыр\source\repos\RevitGrid\RevitGrid\obj\Debug\RevitGrid.pdb
