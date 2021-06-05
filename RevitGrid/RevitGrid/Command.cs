@@ -17,36 +17,148 @@ namespace RevitGrid
     public class Command : IExternalCommand
     {
         private int _step = 0;
-        private Line _line;
         private int _coordinatesByX = 0;
         private int _coordinatesByY = 0;
         public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
         {
             Document doc = commandData.Application.ActiveUIDocument.Document;
-            UIApplication uiapp = commandData.Application;
-            UIDocument uidoc = uiapp.ActiveUIDocument;
-            View activeView = uidoc.ActiveView;
-            SketchPlane sketch = activeView.SketchPlane;
 
+            while (_step != 10)
+            {
+                CreateGridHorizontal(doc);
+                _coordinatesByY += 10;
+                _step++;
+            }
+            CreateLinearDimensionVertical(doc);
+
+            while (_step != 20)
+            {
+                CreateGridVertical(doc);
+                _coordinatesByX += 11;
+                _step++;
+            }
+            CreateLinearDimensionHorizontal(doc);
+
+            return Result.Succeeded;
+        }
+
+        private Result CreateGridHorizontal(Document doc)
+        {
             using (Transaction firstTrans = new Transaction(doc))
             {
                 try
                 {
                     firstTrans.Start("Start");
-                    while (_step != 10)
+
+                    XYZ start = new XYZ(-20, _coordinatesByY, 0);
+                    XYZ end = new XYZ(120, _coordinatesByY, 0);
+                    Line geomLine = Line.CreateBound(start, end);
+
+                    Grid lineGrid = Grid.Create(doc, geomLine);
+
+
+                    if (null == lineGrid)
                     {
-                        CreateGridHorizontal(doc);
-                        CreateLinearDimension(doc, sketch);
-                        _coordinatesByY += 10;
-                        _step++;
+                        throw new Exception("Create a new straight grid failed.");
                     }
-                    while (_step != 20)
+                    if (_coordinatesByY == 0)
                     {
-                        CreateGridVertical(doc);
-                        CreateLinearDimension(doc, sketch);
-                        _coordinatesByX += 11;
-                        _step++;
+                        lineGrid.Name = "A";
                     }
+                    if (_coordinatesByY > 90)
+                    {
+
+                    }
+                    firstTrans.Commit();
+                    return Result.Succeeded;
+                }
+                catch (Exception ex)
+                {
+                    var h = ex;
+                    return Result.Failed;
+                }
+            }
+        }
+
+        private Result CreateGridVertical(Document doc)
+        {
+            using (Transaction firstTrans = new Transaction(doc))
+            {
+                try
+                {
+                    firstTrans.Start("Start");
+                    XYZ start = new XYZ(_coordinatesByX, -20, 0);
+                    XYZ end = new XYZ(_coordinatesByX, 120, 0);
+                    Line geomLine = Line.CreateBound(start, end);
+
+                    Grid lineGrid = Grid.Create(doc, geomLine);
+
+                    if (null == lineGrid)
+                    {
+                        throw new Exception("Create a new straight grid failed.");
+                    }
+                    if (_coordinatesByX == 0)
+                    {
+                        lineGrid.Name = "1";
+                    }
+                    firstTrans.Commit();
+                    return Result.Succeeded;
+                }
+                catch (Exception ex)
+                {
+                    var h = ex;
+                    return Result.Failed;
+                }
+            }
+        }
+
+        public Result CreateLinearDimensionVertical(Document doc)
+        {
+            FilteredElementCollector newFilter = new FilteredElementCollector(doc);
+            ICollection<Element> allGrid = newFilter.OfCategory(BuiltInCategory.OST_Grids).WhereElementIsNotElementType().ToElements();
+            using (Transaction firstTrans = new Transaction(doc))
+            {
+                try
+                {
+                    firstTrans.Start("Start");
+
+                    int step = 0;
+                    int coordinatesByY = 0;
+
+                    ReferenceArray refArray = new ReferenceArray();
+
+                    foreach (var grid in allGrid)
+                    {
+                        Grid grid1 = (Grid)doc.GetElement(grid.Id);
+                        refArray.Append(new Reference(grid1));
+
+                        if (step >= 1 && coordinatesByY != 90)
+                        {
+                            XYZ location1 = new XYZ(120, coordinatesByY, 0);
+                            XYZ location2 = new XYZ(120, coordinatesByY + 10, 0);
+
+                            Line line = Line.CreateBound(location1, location2);
+
+                            if (!doc.IsFamilyDocument)
+                            {
+                                doc.Create.NewDimension(
+                                  doc.ActiveView, line, refArray);
+                            }
+                            else
+                            {
+                                doc.FamilyCreate.NewDimension(
+                                  doc.ActiveView, line, refArray);
+                            }
+
+                            coordinatesByY += 10;
+
+                            grid1 = (Grid)doc.GetElement(grid.Id);
+                            refArray.Clear();
+                            refArray.Append(new Reference(grid1));
+                        }
+                        step++;
+                    }
+
                     firstTrans.Commit();
                     return Result.Succeeded;
                 }
@@ -57,62 +169,64 @@ namespace RevitGrid
             }
         }
 
-        private void CreateGridHorizontal(Document doc)
+        public Result CreateLinearDimensionHorizontal(Document doc)
         {
-            XYZ start = new XYZ(-20, _coordinatesByY, 0);
-            XYZ end = new XYZ(120, _coordinatesByY, 0);
-            Line geomLine = Line.CreateBound(start, end);
-
-            Grid lineGrid = Grid.Create(doc, geomLine);
-
-            if (null == lineGrid)
+            FilteredElementCollector newFilter = new FilteredElementCollector(doc);
+            ICollection<Element> allGrid = newFilter.OfCategory(BuiltInCategory.OST_Grids).WhereElementIsNotElementType().ToElements();
+            using (Transaction firstTrans = new Transaction(doc))
             {
-                throw new Exception("Create a new straight grid failed.");
-            }
-            if (_coordinatesByY == 0)
-            {
-                lineGrid.Name = "A";
-            }
-        }
+                try
+                {
+                    firstTrans.Start("Start");
 
-        private void CreateGridVertical(Document doc)
-        {
-            XYZ start = new XYZ(_coordinatesByX, -20, 0);
-            XYZ end = new XYZ(_coordinatesByX, 120, 0);
-            Line geomLine = Line.CreateBound(start, end);
+                    int step = 0;
+                    int coordinatesByX = 0;
 
-            Grid lineGrid = Grid.Create(doc, geomLine);
+                    ReferenceArray refArray = new ReferenceArray();
 
-            if (null == lineGrid)
-            {
-                throw new Exception("Create a new straight grid failed.");
-            }
-            if (_coordinatesByX == 0)
-            {
-                lineGrid.Name = "1";
-            }
-        }
+                    foreach (var grid in allGrid)
+                    {
+                        if (step > 9)
+                        {
+                            Grid grid1 = (Grid)doc.GetElement(grid.Id);
+                            refArray.Append(new Reference(grid1));
 
-        private void CreateLinearDimension(Document doc, SketchPlane sketch)
-        {
-            if (_step < 9)
-            {
-                XYZ start = new XYZ(-10, _coordinatesByY, 0);
-                XYZ end = new XYZ(-10, _coordinatesByY + 10, 0);
-                _line = Line.CreateBound(start, end);
-            }
-            else if (_step >= 10 && _step < 19)
-            {
-                XYZ start = new XYZ(_coordinatesByX, -10, 0);
-                XYZ end = new XYZ(_coordinatesByX + 11, -10, 0);
-                _line = Line.CreateBound(start, end);
-            }
+                            if (step >= 11 && coordinatesByX != 90)
+                            {
+                                XYZ location1 = new XYZ(coordinatesByX, 120, 0);
+                                XYZ location2 = new XYZ(coordinatesByX + 11, 120, 0);
 
-            ModelCurve modelcurve = doc.Create.NewModelCurve(_line, sketch);
-            ReferenceArray ra = new ReferenceArray();
-            ra.Append(modelcurve.GeometryCurve.GetEndPointReference(0));
-            ra.Append(modelcurve.GeometryCurve.GetEndPointReference(1));
-            doc.Create.NewDimension(doc.ActiveView, _line, ra);
+                                Line line = Line.CreateBound(location1, location2);
+
+                                if (!doc.IsFamilyDocument)
+                                {
+                                    doc.Create.NewDimension(
+                                      doc.ActiveView, line, refArray);
+                                }
+                                else
+                                {
+                                    doc.FamilyCreate.NewDimension(
+                                      doc.ActiveView, line, refArray);
+                                }
+
+                                coordinatesByX += 11;
+
+                                grid1 = (Grid)doc.GetElement(grid.Id);
+                                refArray.Clear();
+                                refArray.Append(new Reference(grid1));
+                            }
+                        }
+                        step++;
+                    }
+
+                    firstTrans.Commit();
+                    return Result.Succeeded;
+                }
+                catch
+                {
+                    return Result.Failed;
+                }
+            }
         }
     }
 }
